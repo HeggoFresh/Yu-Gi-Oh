@@ -1,0 +1,827 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Yu-Gi-Oh! Karten-Ausleihverwaltung</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 20px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        }
+
+        .header h1 {
+            color: white;
+            font-size: 2.5em;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+            margin-bottom: 10px;
+        }
+
+        .login-section {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 20px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        }
+
+        .login-section h2 {
+            color: #4a5568;
+            margin-bottom: 15px;
+            font-size: 1.4em;
+            border-bottom: 3px solid #667eea;
+            padding-bottom: 10px;
+        }
+
+        .login-form {
+            display: flex;
+            gap: 15px;
+            align-items: end;
+            flex-wrap: wrap;
+        }
+
+        .user-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(102, 126, 234, 0.1);
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+
+        .user-info .welcome {
+            font-size: 1.2em;
+            font-weight: bold;
+            color: #4a5568;
+        }
+
+        .data-management {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 20px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        }
+
+        .data-management h2 {
+            color: #4a5568;
+            margin-bottom: 15px;
+            font-size: 1.4em;
+            border-bottom: 3px solid #667eea;
+            padding-bottom: 10px;
+        }
+
+        .data-buttons {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .user-select {
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .user-select select {
+            padding: 10px 20px;
+            font-size: 16px;
+            border-radius: 10px;
+            border: none;
+            background: rgba(255, 255, 255, 0.9);
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .user-select select:hover {
+            background: white;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .cards-section {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .card-panel {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(10px);
+        }
+
+        .card-panel h2 {
+            color: #4a5568;
+            margin-bottom: 15px;
+            font-size: 1.4em;
+            border-bottom: 3px solid #667eea;
+            padding-bottom: 10px;
+        }
+
+        .card-form {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 20px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #4a5568;
+        }
+
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: all 0.3s ease;
+        }
+
+        .form-group input:focus, .form-group select:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .btn {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+            padding: 12px 25px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-secondary {
+            background: linear-gradient(45deg, #48bb78, #38a169);
+        }
+
+        .btn-danger {
+            background: linear-gradient(45deg, #f56565, #e53e3e);
+        }
+
+        .card-item {
+            background: rgba(248, 250, 252, 0.8);
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 10px;
+            border-left: 4px solid #667eea;
+            transition: all 0.3s ease;
+        }
+
+        .card-item:hover {
+            transform: translateX(5px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .card-item.borrowed {
+            border-left-color: #f56565;
+            background: rgba(254, 226, 226, 0.8);
+        }
+
+        .card-item.lent {
+            border-left-color: #48bb78;
+            background: rgba(220, 252, 231, 0.8);
+        }
+
+        .card-name {
+            font-weight: bold;
+            font-size: 1.1em;
+            color: #2d3748;
+        }
+
+        .card-info {
+            color: #4a5568;
+            font-size: 0.9em;
+            margin-top: 5px;
+        }
+
+        .return-btn {
+            background: #48bb78;
+            color: white;
+            padding: 5px 15px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 12px;
+            margin-top: 8px;
+            transition: all 0.3s ease;
+        }
+
+        .return-btn:hover {
+            background: #38a169;
+            transform: translateY(-1px);
+        }
+
+        .empty-state {
+            text-align: center;
+            color: #718096;
+            padding: 20px;
+            font-style: italic;
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .stat-card {
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 10px;
+            padding: 15px;
+            text-align: center;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .stat-number {
+            font-size: 2em;
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        .stat-label {
+            color: #4a5568;
+            font-size: 0.9em;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .file-input-wrapper {
+            position: relative;
+            display: inline-block;
+        }
+
+        .file-input-wrapper input[type=file] {
+            position: absolute;
+            opacity: 0;
+            width: 100%;
+            height: 100%;
+            cursor: pointer;
+        }
+
+        @media (max-width: 768px) {
+            .cards-section {
+                grid-template-columns: 1fr;
+            }
+            
+            .container {
+                padding: 10px;
+            }
+            
+            .header h1 {
+                font-size: 2em;
+            }
+            
+            .login-form {
+                flex-direction: column;
+            }
+            
+            .data-buttons {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎴 Yu-Gi-Oh! Karten-Ausleihverwaltung</h1>
+            <p style="color: rgba(255,255,255,0.8);">Verwalte deine Kartensammlung und behalte den Überblick über alle Ausleihen</p>
+        </div>
+
+        <div class="login-section">
+            <h2>👤 Account-Verwaltung</h2>
+            <div id="loginForm" class="login-form">
+                <div class="form-group" style="flex: 1; min-width: 200px;">
+                    <label for="username">Benutzername:</label>
+                    <input type="text" id="username" placeholder="Benutzername eingeben">
+                </div>
+                <div class="form-group" style="flex: 1; min-width: 200px;">
+                    <label for="password">Passwort:</label>
+                    <input type="password" id="password" placeholder="Passwort eingeben">
+                </div>
+                <div style="display: flex; gap: 10px;">
+                    <button class="btn" onclick="login()">Anmelden</button>
+                    <button class="btn btn-secondary" onclick="register()">Registrieren</button>
+                </div>
+            </div>
+            <div id="userInfo" class="user-info hidden">
+                <div class="welcome">Willkommen, <span id="currentUserName"></span>!</div>
+                <button class="btn btn-danger" onclick="logout()">Abmelden</button>
+            </div>
+        </div>
+
+        <div class="data-management">
+            <h2>💾 Daten-Management</h2>
+            <div class="data-buttons">
+                <button class="btn btn-secondary" onclick="exportData()">Daten exportieren</button>
+                <div class="file-input-wrapper">
+                    <button class="btn btn-secondary">Daten importieren</button>
+                    <input type="file" id="importFile" accept=".json" onchange="importData(event)">
+                </div>
+                <button class="btn btn-danger" onclick="clearAllData()">Alle Daten löschen</button>
+            </div>
+        </div>
+
+        <div id="mainContent" class="hidden">
+            <div class="stats" id="stats"></div>
+
+            <div class="card-form">
+                <h2>📋 Neue Ausleihe hinzufügen</h2>
+                <div class="form-group">
+                    <label for="cardName">Kartenname:</label>
+                    <input type="text" id="cardName" placeholder="z.B. Blauäugiger weißer Drache">
+                </div>
+                <div class="form-group">
+                    <label for="cardOwner">Kartenbesitzer:</label>
+                    <input type="text" id="cardOwner" placeholder="Name des ursprünglichen Besitzers">
+                </div>
+                <div class="form-group">
+                    <label for="borrower">Ausleiher:</label>
+                    <input type="text" id="borrower" placeholder="Name der Person, die die Karte ausleiht">
+                </div>
+                <button class="btn" onclick="addLoan()">Ausleihe hinzufügen</button>
+            </div>
+
+            <div class="card-form">
+                <h2>🔄 Karte weiterausleihen</h2>
+                <div class="form-group">
+                    <label for="relendCard">Karte auswählen:</label>
+                    <select id="relendCard">
+                        <option value="">Karte zum Weiterausleihen auswählen...</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="newBorrower">Neue Person:</label>
+                    <input type="text" id="newBorrower" placeholder="Name der Person, die die Karte erhalten soll">
+                </div>
+                <button class="btn" onclick="relendCard()">Karte weiterausleihen</button>
+            </div>
+
+            <div class="cards-section">
+                <div class="card-panel">
+                    <h2>📤 Meine ausgeliehenen Karten</h2>
+                    <div id="lentCards"></div>
+                </div>
+                <div class="card-panel">
+                    <h2>📥 Von mir geliehene Karten</h2>
+                    <div id="borrowedCards"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Globale Datenstrukturen
+        let users = {};
+        let loans = [];
+        let currentUser = null;
+
+        // Initialisierung
+        function init() {
+            loadData();
+            if (currentUser) {
+                showMainContent();
+            }
+        }
+
+        // Account-Management
+        function register() {
+            const username = document.getElementById('username').value.trim();
+            const password = document.getElementById('password').value.trim();
+
+            if (!username || !password) {
+                alert('Bitte Benutzername und Passwort eingeben!');
+                return;
+            }
+
+            if (users[username]) {
+                alert('Benutzername bereits vergeben!');
+                return;
+            }
+
+            users[username] = {
+                password: password,
+                registrationDate: new Date().toISOString()
+            };
+
+            saveData();
+            alert('Account erfolgreich erstellt!');
+            clearLoginForm();
+        }
+
+        function login() {
+            const username = document.getElementById('username').value.trim();
+            const password = document.getElementById('password').value.trim();
+
+            if (!username || !password) {
+                alert('Bitte Benutzername und Passwort eingeben!');
+                return;
+            }
+
+            if (!users[username]) {
+                alert('Benutzername nicht gefunden!');
+                return;
+            }
+
+            if (users[username].password !== password) {
+                alert('Falsches Passwort!');
+                return;
+            }
+
+            currentUser = username;
+            saveData();
+            showMainContent();
+        }
+
+        function logout() {
+            currentUser = null;
+            saveData();
+            showLoginForm();
+        }
+
+        function showMainContent() {
+            document.getElementById('loginForm').classList.add('hidden');
+            document.getElementById('userInfo').classList.remove('hidden');
+            document.getElementById('mainContent').classList.remove('hidden');
+            document.getElementById('currentUserName').textContent = currentUser;
+            updateDisplay();
+        }
+
+        function showLoginForm() {
+            document.getElementById('loginForm').classList.remove('hidden');
+            document.getElementById('userInfo').classList.add('hidden');
+            document.getElementById('mainContent').classList.add('hidden');
+            clearLoginForm();
+        }
+
+        function clearLoginForm() {
+            document.getElementById('username').value = '';
+            document.getElementById('password').value = '';
+        }
+
+        // Daten-Management
+        function saveData() {
+            const data = {
+                users: users,
+                loans: loans,
+                currentUser: currentUser,
+                lastSaved: new Date().toISOString()
+            };
+            
+            // Simuliere Speicherung (in echter Anwendung würde hier localStorage verwendet werden)
+            window.tempData = data;
+        }
+
+        function loadData() {
+            // Simuliere Laden (in echter Anwendung würde hier localStorage verwendet werden)
+            if (window.tempData) {
+                const data = window.tempData;
+                users = data.users || {};
+                loans = data.loans || [];
+                currentUser = data.currentUser || null;
+            }
+        }
+
+        function exportData() {
+            const data = {
+                users: users,
+                loans: loans,
+                exportDate: new Date().toISOString(),
+                version: "1.0"
+            };
+            
+            const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `yugioh-cards-backup-${new Date().toISOString().split('T')[0]}.json`;
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+
+        function importData(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const data = JSON.parse(e.target.result);
+                    
+                    if (data.users && data.loans) {
+                        const confirmed = confirm('Möchten Sie die importierten Daten mit den vorhandenen Daten zusammenführen oder alles ersetzen?\n\nOK = Zusammenführen\nAbbrechen = Ersetzen');
+                        
+                        if (confirmed) {
+                            // Zusammenführen
+                            users = { ...users, ...data.users };
+                            loans = [...loans, ...data.loans];
+                        } else {
+                            // Ersetzen
+                            users = data.users;
+                            loans = data.loans;
+                        }
+                        
+                        saveData();
+                        updateDisplay();
+                        alert('Daten erfolgreich importiert!');
+                    } else {
+                        alert('Ungültiges Datenformat!');
+                    }
+                } catch (error) {
+                    alert('Fehler beim Importieren der Daten: ' + error.message);
+                }
+            };
+            reader.readAsText(file);
+            event.target.value = '';
+        }
+
+        function clearAllData() {
+            if (confirm('Möchten Sie wirklich alle Daten löschen? Diese Aktion kann nicht rückgängig gemacht werden!')) {
+                users = {};
+                loans = [];
+                currentUser = null;
+                window.tempData = null;
+                showLoginForm();
+                alert('Alle Daten wurden gelöscht!');
+            }
+        }
+
+        // Ausleihe-Management
+        function addLoan() {
+            const cardName = document.getElementById('cardName').value.trim();
+            const cardOwner = document.getElementById('cardOwner').value.trim();
+            const borrower = document.getElementById('borrower').value.trim();
+
+            if (!cardName || !cardOwner || !borrower) {
+                alert('Bitte alle Felder ausfüllen!');
+                return;
+            }
+
+            if (cardOwner === borrower) {
+                alert('Besitzer und Ausleiher können nicht dieselbe Person sein!');
+                return;
+            }
+
+            const loan = {
+                id: Date.now(),
+                cardName: cardName,
+                originalOwner: cardOwner,
+                currentHolder: borrower,
+                loanDate: new Date().toLocaleDateString('de-DE'),
+                returnDate: null,
+                createdBy: currentUser,
+                createdAt: new Date().toISOString()
+            };
+
+            loans.push(loan);
+            saveData();
+
+            document.getElementById('cardName').value = '';
+            document.getElementById('cardOwner').value = '';
+            document.getElementById('borrower').value = '';
+
+            updateDisplay();
+        }
+
+        function relendCard() {
+            const selectedLoanId = document.getElementById('relendCard').value;
+            const newBorrower = document.getElementById('newBorrower').value.trim();
+
+            if (!selectedLoanId || !newBorrower) {
+                alert('Bitte eine Karte auswählen und einen neuen Ausleiher eingeben!');
+                return;
+            }
+
+            const loan = loans.find(l => l.id == selectedLoanId);
+            if (!loan) {
+                alert('Karte nicht gefunden!');
+                return;
+            }
+
+            if (loan.currentHolder !== currentUser) {
+                alert('Sie können nur Karten weiterausleihen, die Sie gerade haben!');
+                return;
+            }
+
+            if (newBorrower === currentUser) {
+                alert('Sie können eine Karte nicht an sich selbst weiterausleihen!');
+                return;
+            }
+
+            if (newBorrower === loan.originalOwner) {
+                // Karte wird an ursprünglichen Besitzer zurückgegeben
+                loan.returnDate = new Date().toLocaleDateString('de-DE');
+                loan.returnedBy = currentUser;
+                loan.returnedAt = new Date().toISOString();
+            } else {
+                // Karte wird weitergegeben
+                loan.currentHolder = newBorrower;
+                loan.loanDate = new Date().toLocaleDateString('de-DE');
+                loan.relentBy = currentUser;
+                loan.relentAt = new Date().toISOString();
+            }
+
+            saveData();
+
+            document.getElementById('relendCard').value = '';
+            document.getElementById('newBorrower').value = '';
+
+            updateDisplay();
+        }
+
+        function returnCard(loanId) {
+            const loan = loans.find(l => l.id === loanId);
+            if (loan) {
+                loan.returnDate = new Date().toLocaleDateString('de-DE');
+                loan.returnedBy = currentUser;
+                loan.returnedAt = new Date().toISOString();
+                saveData();
+                updateDisplay();
+            }
+        }
+
+        function updateDisplay() {
+            if (!currentUser) return;
+            
+            updateStats();
+            updateLentCards();
+            updateBorrowedCards();
+            updateRelendOptions();
+        }
+
+        function updateStats() {
+            const statsDiv = document.getElementById('stats');
+            
+            if (!currentUser) {
+                statsDiv.innerHTML = '';
+                return;
+            }
+
+            const activeLoans = loans.filter(l => !l.returnDate);
+            const myLentCards = activeLoans.filter(l => l.originalOwner === currentUser);
+            const myBorrowedCards = activeLoans.filter(l => l.currentHolder === currentUser);
+            const totalCards = myLentCards.length + myBorrowedCards.length;
+            const allMyTransactions = loans.filter(l => l.originalOwner === currentUser || l.currentHolder === currentUser);
+
+            statsDiv.innerHTML = `
+                <div class="stat-card">
+                    <div class="stat-number">${totalCards}</div>
+                    <div class="stat-label">Aktive Ausleihen</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">${myLentCards.length}</div>
+                    <div class="stat-label">Ausgeliehene Karten</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">${myBorrowedCards.length}</div>
+                    <div class="stat-label">Geliehene Karten</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">${allMyTransactions.filter(l => l.returnDate).length}</div>
+                    <div class="stat-label">Zurückgegeben</div>
+                </div>
+            `;
+        }
+
+        function updateLentCards() {
+            const container = document.getElementById('lentCards');
+            
+            if (!currentUser) {
+                container.innerHTML = '<div class="empty-state">Bitte anmelden</div>';
+                return;
+            }
+
+            const activeLoans = loans.filter(l => !l.returnDate);
+            const myLentCards = activeLoans.filter(l => l.originalOwner === currentUser);
+
+            if (myLentCards.length === 0) {
+                container.innerHTML = '<div class="empty-state">Keine ausgeliehenen Karten</div>';
+                return;
+            }
+
+            container.innerHTML = myLentCards.map(loan => `
+                <div class="card-item lent">
+                    <div class="card-name">${loan.cardName}</div>
+                    <div class="card-info">
+                        Ausgeliehen an: <strong>${loan.currentHolder}</strong><br>
+                        Seit: ${loan.loanDate}<br>
+                        <span style="color: #2d3748; font-weight: bold;">
+                            ${loan.currentHolder} muss diese Karte an ${loan.originalOwner} zurückgeben
+                        </span>
+                    </div>
+                    <button class="return-btn" onclick="returnCard(${loan.id})">
+                        Als zurückgegeben markieren
+                    </button>
+                </div>
+            `).join('');
+        }
+
+        function updateBorrowedCards() {
+            const container = document.getElementById('borrowedCards');
+            
+            if (!currentUser) {
+                container.innerHTML = '<div class="empty-state">Bitte anmelden</div>';
+                return;
+            }
+
+            const activeLoans = loans.filter(l => !l.returnDate);
+            const myBorrowedCards = activeLoans.filter(l => l.currentHolder === currentUser && l.originalOwner !== currentUser);
+
+            if (myBorrowedCards.length === 0) {
+                container.innerHTML = '<div class="empty-state">Keine geliehenen Karten</div>';
+                return;
+            }
+
+            container.innerHTML = myBorrowedCards.map(loan => `
+                <div class="card-item borrowed">
+                    <div class="card-name">${loan.cardName}</div>
+                    <div class="card-info">
+                        Ursprünglicher Besitzer: <strong>${loan.originalOwner}</strong><br>
+                        Seit: ${loan.loanDate}<br>
+                        <span style="color: #e53e3e; font-weight: bold;">
+                            Zurückgeben an: ${loan.originalOwner}
+                        </span>
+                    </div>
+                    <div style="margin-top: 10px;">
+                        <button class="return-btn" onclick="returnCard(${loan.id})">
+                            An ${loan.originalOwner} zurückgeben
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function updateRelendOptions() {
+            const select = document.getElementById('relendCard');
+            select.innerHTML = '<option value="">Karte zum Weiterausleihen auswählen...</option>';
+            
+            if (!currentUser) return;
+
+            const activeLoans = loans.filter(l => !l.returnDate);
+            const myBorrowedCards = activeLoans.filter(l => l.currentHolder === currentUser);
+
+            myBorrowedCards.forEach(loan => {
+                const option = document.createElement('option');
+                option.value = loan.id;
+                option.textContent = `${loan.cardName} (von ${loan.originalOwner})`;
+                select.appendChild(option);
+            });
+        }
+
+        // Initialisierung beim Laden der Seite
+        window.addEventListener('load', init);
+    </script>
+</body>
+</html>
