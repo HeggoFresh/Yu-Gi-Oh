@@ -385,11 +385,15 @@
                 </div>
                 <div class="form-group">
                     <label for="cardOwner">Kartenbesitzer:</label>
-                    <input type="text" id="cardOwner" placeholder="Name des ursprünglichen Besitzers">
+                    <select id="cardOwner">
+                        <option value="">Besitzer auswählen...</option>
+                    </select>
                 </div>
                 <div class="form-group">
                     <label for="borrower">Ausleiher:</label>
-                    <input type="text" id="borrower" placeholder="Name der Person, die die Karte ausleiht">
+                    <select id="borrower">
+                        <option value="">Ausleiher auswählen...</option>
+                    </select>
                 </div>
                 <button class="btn" onclick="addLoan()">Ausleihe hinzufügen</button>
             </div>
@@ -404,7 +408,9 @@
                 </div>
                 <div class="form-group">
                     <label for="newBorrower">Neue Person:</label>
-                    <input type="text" id="newBorrower" placeholder="Name der Person, die die Karte erhalten soll">
+                    <select id="newBorrower">
+                        <option value="">Neuen Ausleiher auswählen...</option>
+                    </select>
                 </div>
                 <button class="btn" onclick="relendCard()">Karte weiterausleihen</button>
             </div>
@@ -427,6 +433,9 @@
         let users = {};
         let loans = [];
         let currentUser = null;
+
+        // Schlüssel für localStorage
+        const STORAGE_KEY = 'yugiohCardManagerData';
 
         // Initialisierung
         function init() {
@@ -459,6 +468,7 @@
             saveData();
             alert('Account erfolgreich erstellt!');
             clearLoginForm();
+            updateUserDropdowns();
         }
 
         function login() {
@@ -520,17 +530,26 @@
                 lastSaved: new Date().toISOString()
             };
             
-            // Simuliere Speicherung (in echter Anwendung würde hier localStorage verwendet werden)
-            window.tempData = data;
+            // Speichern im localStorage
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
         }
 
         function loadData() {
-            // Simuliere Laden (in echter Anwendung würde hier localStorage verwendet werden)
-            if (window.tempData) {
-                const data = window.tempData;
-                users = data.users || {};
-                loans = data.loans || [];
-                currentUser = data.currentUser || null;
+            // Laden aus dem localStorage
+            const savedData = localStorage.getItem(STORAGE_KEY);
+            if (savedData) {
+                try {
+                    const data = JSON.parse(savedData);
+                    users = data.users || {};
+                    loans = data.loans || [];
+                    currentUser = data.currentUser || null;
+                } catch (e) {
+                    console.error('Fehler beim Laden der Daten:', e);
+                    // Falls die Daten beschädigt sind, zurücksetzen
+                    users = {};
+                    loans = [];
+                    currentUser = null;
+                }
             }
         }
 
@@ -575,6 +594,7 @@
                         
                         saveData();
                         updateDisplay();
+                        updateUserDropdowns();
                         alert('Daten erfolgreich importiert!');
                     } else {
                         alert('Ungültiges Datenformat!');
@@ -592,10 +612,36 @@
                 users = {};
                 loans = [];
                 currentUser = null;
-                window.tempData = null;
+                localStorage.removeItem(STORAGE_KEY);
                 showLoginForm();
+                updateUserDropdowns();
                 alert('Alle Daten wurden gelöscht!');
             }
+        }
+
+        // Hilfsfunktion um Dropdowns mit Benutzern zu aktualisieren
+        function updateUserDropdowns() {
+            const userSelects = ['cardOwner', 'borrower', 'newBorrower'];
+            
+            userSelects.forEach(selectId => {
+                const select = document.getElementById(selectId);
+                const currentValue = select.value;
+                select.innerHTML = `<option value="">${selectId === 'newBorrower' ? 'Neuen Ausleiher auswählen...' : selectId === 'cardOwner' ? 'Besitzer auswählen...' : 'Ausleiher auswählen...'}</option>`;
+                
+                Object.keys(users).forEach(username => {
+                    if (username !== currentUser || selectId === 'cardOwner') {
+                        const option = document.createElement('option');
+                        option.value = username;
+                        option.textContent = username;
+                        select.appendChild(option);
+                    }
+                });
+                
+                // Vorherigen Wert wiederherstellen, falls noch vorhanden
+                if (users[currentValue]) {
+                    select.value = currentValue;
+                }
+            });
         }
 
         // Ausleihe-Management
@@ -699,6 +745,7 @@
             updateLentCards();
             updateBorrowedCards();
             updateRelendOptions();
+            updateUserDropdowns();
         }
 
         function updateStats() {
